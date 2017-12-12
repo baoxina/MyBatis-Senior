@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<!-- 加载属性文件 -->
+	<properties resource="db.properties"/>
+	
+	<!-- 设置全局参数 -->
+	<settings>
+		<!-- 打开延迟加载开关 -->
+		<setting name="lazyLoadingEnabled" value="true"/>
+		<!-- 将积极加载改为消极加载，即需要加载 -->
+		<setting name="aggressiveLazyLoading" value="false"/>
+		<!-- 开启二级缓存总开关 -->
+		<setting name="cacheEnabled" value="true"/>
+	</settings>
+	
+	<!-- 设置pojo、集合类型的别名-->
+	<!-- 批量定义pojo类型的别名 ，以便parameterType和resultType使用-->
+	<typeAliases>
+		<typeAlias type="java.util.HashMap" alias="hashMap"/>
+		<package name="com.baoxina.mybatis.senior.po"/>
+	</typeAliases>
+	
+	<!--数据库环境  配置信息 -->
+	<environments default="baoxina">
+		<environment id="baoxina">
+			<transactionManager type="JDBC" />
+			<dataSource type="POOLED">
+				<property name="driver" value="${jdbc.driver}"/>
+				<property name="url" value="${jdbc.url}" />
+				<property name="username" value="${jdbc.username}" />
+				<property name="password" value="${jdbc.password}" />
+			</dataSource>
+		</environment>
+	</environments>
+	<!-- 在用mapper代理方式 的前提下，通过批量扫描mapper接口  加载 mapper映射文件   -->
+	<mappers>
+		<package name="com.baoxina.mybatis.senior.mapper"/>
+	</mappers>
+</configuration>

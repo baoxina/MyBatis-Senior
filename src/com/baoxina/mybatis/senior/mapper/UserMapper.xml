@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.baoxina.mybatis.senior.mapper.UserMapper">
+	<!-- 开启本mapper的namespace下的二缓存 
+		type：指定cache接口的实现类的类型，mybatis默认使用PerpetualCache 
+		要和ehcache整合，需要配置type为ehcache实现cache接口的类型 
+		需要导入下面两个jar包
+		ehcache核心包：ehcache-core-2.6.5.jar
+		mybatis与ehcache整合包：mybatis-ehcache-1.0.2.jar，该包中的EhcacheCache实现了mybatis提供的Cache接口
+		
+		
+		mybaits二级缓存缺点:
+			由于mybaits的二级缓存区域以mapper为单位划分，当一个商品信息变化会将所有商品信息的缓存数据全部清空.
+			因此mybatis二级缓存对细粒度的数据级别的缓存实现不好，如果使用mybatis的二级缓存就无法实现当一个商品变化时只刷新该商品的缓存信息而不刷新其它商品的信息，
+			解决此类问题需要在业务层根据需求对数据有针对性缓存
+		-->
+	<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+
+	<sql id="query_user_where">
+		<if test="userExt!=null">
+			<if test="userExt.sex!=null and userExt.sex!=''">
+				and user.sex = #{userExt.sex}
+			</if>
+			<if test="userExt.username!=null and userExt.username!=''">
+				and user.username LIKE '%${userExt.username}%'
+			</if>
+			<if test="ids!=null">
+				<foreach collection="ids" item="user_id" open="AND (" close=")"
+					separator="or">
+					id=#{user_id}
+				</foreach>
+			</if>
+		</if>
+	</sql>
+
+	<resultMap type="user" id="userResultMap">
+		<id column="id_" property="id" />
+		<result column="username_" property="username" />
+
+	</resultMap>
+
+	<select id="findUserList" parameterType="UserQueryVo"
+		resultType="UserExt">
+		SELECT * FROM USER
+		<where>
+			<include refid="query_user_where"></include>
+		</where>
+	</select>
+
+	<select id="findUserCount" parameterType="UserQueryVo"
+		resultType="int">
+		SELECT count(*) FROM USER
+		<where>
+			<include refid="query_user_where"></include>
+		</where>
+
+
+	</select>
+
+	<select id="findUserById" parameterType="int" resultType="user">
+		SELECT
+		* FROM USER WHERE id=#{value}
+	</select>
+
+	<select id="findUserByIdResultMap" parameterType="int"
+		resultMap="userResultMap">
+		SELECT id id_,username username_ FROM USER WHERE id=#{value}
+	</select>
+
+	<select id="findUserByName" parameterType="string" resultType="User">
+		SELECT * FROM USER WHERE username LIKE '%${value}%'
+	</select>
+
+	<insert id="insertUser" parameterType="User">
+		<selectKey keyProperty="id" order="AFTER" resultType="int">
+			SELECT
+			LAST_INSERT_ID()
+		</selectKey>
+		insert into user(username,birthday,sex,address)
+		value(#{username},#{birthday},#{sex},#{address})
+	</insert>
+
+	<delete id="deleteUser" parameterType="int">
+		delete from user where
+		id=#{id}
+	</delete>
+
+	<update id="updateUser" parameterType="User">
+		update user set
+		username=#{username},birthday=#{birthday},sex=#{sex},address=#{address}
+		where id=#{id}
+	</update>
+</mapper>
